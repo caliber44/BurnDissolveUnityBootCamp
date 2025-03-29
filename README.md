@@ -2,6 +2,9 @@
 
 A simple Burn Dissolve shader created using Shader Graph in Unity's Universal Render Pipeline (URP). This repository also includes a work-in-progress (WIP) version that allows burning to spread dynamically where the user drags with the mouse.
 
+![Basic Burn Dissolve](https://raw.githubusercontent.com/caliber44/BurnDissolveUnityBootCamp/main/old.gif)
+![Interactive Burn (WIP)](https://raw.githubusercontent.com/caliber44/BurnDissolveUnityBootCamp/main/wip.gif)
+
 ## Features
 - **Burn Dissolve Shader**: A basic shader that creates a burn effect, dissolving an object over time.
 - **Interactive Burn (WIP)**: A version of the shader that spreads burning dynamically based on user input.
