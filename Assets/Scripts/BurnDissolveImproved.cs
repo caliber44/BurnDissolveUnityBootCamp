@@ -10,6 +10,7 @@ public class BurnDissolveImproved : MonoBehaviour
     [SerializeField] private float m_burnEdge;
     [SerializeField] private Vector2Int m_spreadMinMax;
     [SerializeField] private ParticleSystem m_burnParticles;
+    [SerializeField] private Material m_burnMaterial;
 
     private Ray m_ray;
     private RaycastHit m_rayHitInfo;
@@ -41,7 +42,7 @@ public class BurnDissolveImproved : MonoBehaviour
 
         InitBuffer();
         InitTexture();
-        SetParticleMask();
+        SetParticleSystem();
     }
     private void InitBuffer() 
     {
@@ -53,6 +54,8 @@ public class BurnDissolveImproved : MonoBehaviour
     }
     private void InitTexture() 
     {
+        m_burnDissolveMeshRenderer.material = m_burnMaterial;
+
         m_mask = new Texture2D(m_bufferSize.x, m_bufferSize.y, TextureFormat.Alpha8, false);
         m_maskValues = new Color32[m_bufferSize.x * m_bufferSize.y];
 
@@ -75,10 +78,15 @@ public class BurnDissolveImproved : MonoBehaviour
         UpdateMaskValues();
         CheckInput();
     }
-    private void SetParticleMask() 
+    private void SetParticleSystem() 
     {
         ParticleSystem.ShapeModule shape = m_burnParticles.shape;
         shape.texture = m_mask;
+
+        ParticleSystem.MainModule main = m_burnParticles.main;
+        main.loop = true;
+        
+        m_burnParticles.Play();
     }
     private void CheckInput() 
     {

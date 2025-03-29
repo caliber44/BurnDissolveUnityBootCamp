@@ -5393,7 +5393,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d7b7367396252194bafb318d05e5f85f, type: 2}
+  - {fileID: 2100000, guid: e74c85ce1968fc648bf0c1914954c05e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5457,10 +5457,11 @@ MonoBehaviour:
     m_Bits: 64
   m_bufferSize: {x: 1024, y: 1024}
   m_planeSize: {x: 5, y: 5}
-  m_burnSize: 100
+  m_burnSize: 10
   m_burnEdge: 1.5
   m_spreadMinMax: {x: 2, y: 5}
   m_burnParticles: {fileID: 1488476018}
+  m_burnMaterial: {fileID: 2100000, guid: d7b7367396252194bafb318d05e5f85f, type: 2}
 --- !u!65 &1488476016
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5574,9 +5575,9 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
+  looping: 0
   prewarm: 0
-  playOnAwake: 1
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
