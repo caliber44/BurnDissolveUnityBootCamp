@@ -5458,6 +5458,8 @@ MonoBehaviour:
   m_bufferSize: {x: 1024, y: 1024}
   m_planeSize: {x: 5, y: 5}
   m_burnSize: 100
+  m_burnEdge: 1.5
+  m_spreadMinMax: {x: 2, y: 5}
   m_burnParticles: {fileID: 1488476018}
 --- !u!65 &1488476016
 BoxCollider:
@@ -10353,7 +10355,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1500829812
 Transform:
   m_ObjectHideFlags: 0
@@ -10602,7 +10604,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2125897699
 Transform:
   m_ObjectHideFlags: 0

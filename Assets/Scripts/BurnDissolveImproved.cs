@@ -7,6 +7,8 @@ public class BurnDissolveImproved : MonoBehaviour
     [SerializeField] private Vector2Int m_bufferSize;
     [SerializeField] private Vector2 m_planeSize;
     [SerializeField] private float m_burnSize;
+    [SerializeField] private float m_burnEdge;
+    [SerializeField] private Vector2Int m_spreadMinMax;
     [SerializeField] private ParticleSystem m_burnParticles;
 
     private Ray m_ray;
@@ -143,17 +145,20 @@ public class BurnDissolveImproved : MonoBehaviour
     }
     private void SpreadBurn(int x, int y) 
     {
-        int wX = x - 1;
-        int wY = y - 1;
-        
-        for(int i = 0; i < 3; i++) 
+        int spreadSizeX = Random.Range(m_spreadMinMax.x, m_spreadMinMax.y + 1);
+        int spreadSizeY = Random.Range(m_spreadMinMax.x, m_spreadMinMax.y + 1);
+
+        int wX = x - (spreadSizeX / 2);
+        int wY = y - (spreadSizeY / 2);
+
+        for (int i = 0; i < spreadSizeX; i++) 
         {
-            for(int k = 0; k < 3; k++) 
+            for (int k = 0; k < spreadSizeY; k++) 
             {
                 if (wX + i < 0 || wX + i >= m_bufferSize.x) continue;
                 if (wY + k < 0 || wY + k >= m_bufferSize.y) continue;
 
-                if (m_buffer[wX + i, wY + k] == 0)
+                if (m_buffer[wX + i, wY + k] == 0 && AlphaCheck(wX + i, wY + k, 1))
                 {
                     SetBufferValue(wX + i, wY + k, 1f,m_tempBuffer);
                 }
@@ -170,7 +175,7 @@ public class BurnDissolveImproved : MonoBehaviour
 
                 if(m_buffer[x,y] == 1) SpreadBurn(x, y);
 
-                SetBufferValue(x, y,m_buffer[x,y] -= Time.deltaTime,m_buffer);
+                SetBufferValue(x, y,m_buffer[x,y] -= m_burnEdge * Time.deltaTime,m_buffer);
             }
         }
 
@@ -220,7 +225,7 @@ public class BurnDissolveImproved : MonoBehaviour
 
         buffer[x, y] = value;
     }
-    private bool AlphaCheck(float x, float y)
+    private bool AlphaCheck(float x, float y, float cutoff = 250)
     {
         int j = Mathf.FloorToInt(x);
         int k = Mathf.FloorToInt(y);
@@ -228,7 +233,7 @@ public class BurnDissolveImproved : MonoBehaviour
         if (j < 0 || j >= m_bufferSize.x) return false;
         if (k < 0 || k >= m_bufferSize.y) return false;
 
-        return m_alphaValues[k * m_bufferSize.x + j].a < 250;
+        return m_alphaValues[k * m_bufferSize.x + j].a < cutoff;
     }
     private void RayhitWorldPointToUV() 
     {
