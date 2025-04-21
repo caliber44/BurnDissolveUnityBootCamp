@@ -16,10 +16,11 @@ A simple Burn Dissolve shader created using Shader Graph in Unity's Universal Re
 ## Roadmap
 - ✅ Basic Burn Dissolve Shader
 - 🚧 Interactive Burn Shader (Work in Progress)
-
+  
+## References
+- George Marsaglia Xorshift [Xorshift](https://en.wikipedia.org/wiki/Xorshift)
+  
 ## License
 This project is open-source under the MIT License.
 
-## References
-- George Marsaglia Xorshift [Xorshift](https://en.wikipedia.org/wiki/Xorshift)
 
