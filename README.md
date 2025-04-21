@@ -19,3 +19,7 @@ A simple Burn Dissolve shader created using Shader Graph in Unity's Universal Re
 
 ## License
 This project is open-source under the MIT License.
+
+## References
+- George Marsaglia Xorshift [Xorshift](https://en.wikipedia.org/wiki/Xorshift)
+
