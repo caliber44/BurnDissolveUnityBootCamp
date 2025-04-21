@@ -9,7 +9,7 @@ A simple Burn Dissolve shader created using Shader Graph in Unity's Universal Re
 
 ## Features
 - **Burn Dissolve Shader**: A basic shader that creates a burn effect, dissolving an object over time.
-- **Interactive Burn (WIP)**: A version of the shader that spreads burning dynamically based on user input.
+- **Interactive Burn (WIP)**: A version of the shader that spreads burning dynamically based on user input. Recently improved with a custom compute shader, allowing for more control over the burn speed and spread radius. The shader now supports efficient GPU-based calculations for burn spreading, which can be tweaked dynamically for smoother transitions and performance.
 - **URP Compatibility**: Designed specifically for Unity's Universal Render Pipeline.
 - **Fully Node-Based**: Created using Unity's Shader Graph for easy modification.
 
@@ -19,4 +19,3 @@ A simple Burn Dissolve shader created using Shader Graph in Unity's Universal Re
 
 ## License
 This project is open-source under the MIT License.
-
