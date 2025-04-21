@@ -1,0 +1,160 @@
+// ----------------------------------------
+// Burn Dissolve Compute Shader
+// ----------------------------------------
+#pragma kernel BurnDissolve
+#pragma kernel BurnDissolveCopyTempBuffer
+#pragma kernel InitBurn
+
+// Main textures used in the burn effect
+RWTexture2D<float> _Mask; // Current burn state (1.0 = burning, 0.0 = not burning)
+RWTexture2D<float> _TempMask; // Temporary buffer for spreading the burn effect
+RWTexture2D<float> _Alpha; // Persistent alpha/burn holes (accumulates burn effect)
+
+// Burn parameters
+float _BurnSpeed; // How fast the burn effect decays
+float _DeltaTime; // Time.deltaTime from Unity
+int2 _SpreadMinMax; // Min/max range for burn spread
+int _BufferSize; // Size of the texture (assuming square texture)
+
+// Burn initialization parameters
+float2 _BurnPosition; // UV position to apply burn (0-1 range)
+float _BurnRadius; // Radius of burn in pixels
+
+// ----------------------------------------
+// Xorshift random number generator
+// ----------------------------------------
+uint XorShift32(inout uint state)
+{
+    // Simple and fast RNG algorithm
+    state ^= state << 13;
+    state ^= state >> 17;
+    state ^= state << 5;
+    return state;
+}
+
+// ----------------------------------------
+// Initialize burn at a specific position
+// ----------------------------------------
+[numthreads(8, 8, 1)]
+void InitBurn(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _BufferSize || id.y >= _BufferSize)
+        return;
+
+    // Convert burn position from UV (0-1) to texture space
+    float2 burnCenter = _BurnPosition * _BufferSize;
+
+    // Current pixel position
+    float2 pixelPos = float2(id.xy);
+
+    // Square distance check for performance
+    float2 diff = pixelPos - burnCenter;
+    float distSqr = dot(diff, diff);
+    float radiusSqr = _BurnRadius * _BurnRadius;
+
+    // Burn all pixels within the circle
+    if (distSqr <= radiusSqr && _Alpha[id.xy] < 0.9)
+    {
+        _Mask[id.xy] = 1.0;
+    }
+}
+
+// ----------------------------------------
+// Main burn dissolve kernel - handles burn spreading and decay
+// ----------------------------------------
+[numthreads(8, 8, 1)]
+void BurnDissolve(uint3 id : SV_DispatchThreadID)
+{
+    // Skip if out of bounds
+    if (id.x >= (uint) _BufferSize || id.y >= (uint) _BufferSize)
+        return;
+        
+    float maskValue = _Mask[id.xy];
+    
+    // Early exit if pixel isn't burning
+    if (maskValue <= 0.0)
+        return;
+        
+    // If this is a fresh burn (value close to 1.0), spread to nearby pixels
+    if (maskValue > 0.9)
+    {
+        // Create a deterministic seed based on pixel position
+        uint seed = id.x * 73856093u ^ id.y * 19349663u ^ (uint) (maskValue * 1000);
+        
+        // Generate random spread size within configured min/max
+        uint rng = XorShift32(seed);
+        uint spreadSizeX = _SpreadMinMax.x + (rng % (_SpreadMinMax.y - _SpreadMinMax.x + 1));
+        
+        rng = XorShift32(seed);
+        uint spreadSizeY = _SpreadMinMax.x + (rng % (_SpreadMinMax.y - _SpreadMinMax.x + 1));
+        
+        // Calculate half sizes for centered spread
+        int halfX = (int) (spreadSizeX / 2);
+        int halfY = (int) (spreadSizeY / 2);
+        
+        // Try to spread fire in all directions
+        for (int dx = -halfX; dx <= halfX; dx++)
+        {
+            for (int dy = -halfY; dy <= halfY; dy++)
+            {
+                int2 target = int2(id.xy) + int2(dx, dy);
+                
+                // Skip if out of texture bounds
+                if (target.x < 0 || target.y < 0 || target.x >= _BufferSize || target.y >= _BufferSize)
+                    continue;
+                    
+                // Check if target pixel has already been burned
+                float alpha = _Alpha[target].r;
+                float targetMask = _Mask[target].r;
+                
+                // Only spread to non-burning pixels that haven't been heavily burned yet
+                if (alpha < 0.98 && targetMask <= 0.0)
+                {
+                    // Calculate distance-based probability of spread
+                    float dist = length(float2(dx, dy));
+                    float spreadProb = 1.0 - (dist / max(halfX, halfY));
+                    
+                    // Use the random seed to decide if we spread
+                    rng = XorShift32(rng);
+                    float randVal = (rng % 1000) / 1000.0;
+                    
+                    if (randVal < spreadProb)
+                    {
+                        _TempMask[target] = 1.0; // Mark for burning in next phase
+                    }
+                }
+            }
+        }
+    }
+    
+    // Burn decay - reduce burn value over time
+    maskValue -= _BurnSpeed * _DeltaTime;
+    _Mask[id.xy] = max(0.0, maskValue);
+    
+    // Update persistent alpha to track where burning has occurred
+    float currentAlpha = _Alpha[id.xy].r;
+    float newAlpha = max(currentAlpha, _Mask[id.xy]);
+    _Alpha[id.xy] = newAlpha;
+}
+
+// ----------------------------------------
+// Copy temp buffer to main buffer and reset temp
+// ----------------------------------------
+[numthreads(8, 8, 1)]
+void BurnDissolveCopyTempBuffer(uint3 id : SV_DispatchThreadID)
+{
+    // Skip if out of bounds
+    if (id.x >= (uint) _BufferSize || id.y >= (uint) _BufferSize)
+        return;
+        
+    float tempValue = _TempMask[id.xy];
+    
+    // Copy non-zero values from temp to main buffer
+    if (tempValue > 0.0 && _Mask[id.xy] <= 0.0)
+    {
+        _Mask[id.xy] = tempValue;
+    }
+    
+    // Always clear temp buffer
+    _TempMask[id.xy] = 0.0;
+}
